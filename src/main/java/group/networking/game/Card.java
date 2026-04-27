@@ -40,15 +40,16 @@ public class Card {
                         rank.equalsIgnoreCase("k")
         ){
             value = 10;
-        }else if (
-                rank.replaceAll("\\D", "") == ""
-        ){
-            value = Integer.parseInt(rank);
         }else{
-            value = 0;
+            try{
+                value = Integer.parseInt(rank);
+            } catch (NumberFormatException e){
+                value = 0;
+            }
         }
     }
 
-
+    public void setHigh(){}
+    public void setLow(){};
 
 }

@@ -7,18 +7,20 @@ public class Ace extends Card{
 
     private int state;
 
-    public Ace(Suit suit, boolean state){
+    public Ace(Suit suit){
         super(suit, "A");
+        state = 0;
     }
 
+    @Override
     public void setLow(){
         state = LOW;
     }
-
+    @Override
     public void setHigh(){
         state = HIGH;
     }
-    
+
     @Override
     public int getValue(){
         return state;
