@@ -20,6 +20,11 @@
             <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.microraft</groupId>
+            <artifactId>microraft</artifactId>
+            <version>0.7</version>
+        </dependency>
     </dependencies>
 
 </project>
