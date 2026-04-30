@@ -12,6 +12,11 @@ public class Ace extends Card{
         state = 0;
     }
 
+    /*
+     *  Low makes ace =   1
+     *  High makes ace = 11
+     */
+
     @Override
     public void setLow(){
         state = LOW;
@@ -20,6 +25,8 @@ public class Ace extends Card{
     public void setHigh(){
         state = HIGH;
     }
+
+    // get the value of the card
 
     @Override
     public int getValue(){

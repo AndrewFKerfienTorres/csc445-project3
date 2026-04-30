@@ -33,6 +33,11 @@ public class Card {
         return value;
     }
 
+    /*
+     *  2-10 are valued just as the number suggests.
+     *  J, Q, and K are worth the same as 10.
+     */
+
     private void setValue(){
         if(
                 rank.equalsIgnoreCase("j") ||
@@ -48,6 +53,8 @@ public class Card {
             }
         }
     }
+
+    // not useful except for the ace
 
     public void setHigh(){}
     public void setLow(){};
