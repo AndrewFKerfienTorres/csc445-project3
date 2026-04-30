@@ -10,13 +10,32 @@ public class Deck {
     private ArrayDeque<Card> cards;
     private ArrayList<Card> dealt;
 
+    public static Deck getInstance(){
+        if (deck != null){
+            return deck;
+        }else{
+            deck = new Deck();
+            return deck;
+        }
+    }
+
+    /*
+     * Remove all the cards from the dealt list and re-introduce them into the deck
+     * thereafter shuffle the deck.
+     */
 
     public void shuffle(){
         cards.addAll(dealt);
         ArrayList<Card> l = new ArrayList<>(cards);
         Collections.shuffle(l);
         cards = new ArrayDeque<Card>(l);
+        dealt.clear();
     }
+
+    /*
+     * Remove a card from the deck, and return it to give it to the player.
+     * Also places said card on the dealt list to keep track of teh card.
+     */
 
     public Card draw(){
         if (cards.isEmpty()) return null;
@@ -26,15 +45,15 @@ public class Deck {
     }
 
 
-
-
-
-
+    // =================================== DO NOT NEED TO CHECK THIS ================================================
 
     public ArrayDeque<Card> getCards(){
         // FOR TESTING PURPOSES;
+        // SERIOUSLY, JUST USE THE SAFER CLASSES INSTEAD OF WORKING WITH CARDS DIRECTLY
         return cards;
     }
+
+    // this just creates the deck by putting together the card of every rank for every suit.
 
     private Deck(){
         Card[] cards = new Card[SIZE];
@@ -59,14 +78,7 @@ public class Deck {
         dealt = new ArrayList<>();
     }
 
-    public static Deck getInstance(){
-        if (deck != null){
-            return deck;
-        }else{
-            deck = new Deck();
-            return deck;
-        }
-    }
+    // Makes every card for the given suit.
 
     private Card[] createForSuit(Suit suit){
         Card[] cardsInSuit = {

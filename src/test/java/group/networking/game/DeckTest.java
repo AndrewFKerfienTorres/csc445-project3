@@ -6,23 +6,21 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Random;
 
 public class DeckTest {
 
     private Deck deck;
 
-    @BeforeEach
-    void createDeck(){
+    @BeforeEach void createDeck(){
         deck = Deck.getInstance();
     }
 
-    @Test
-    void deckCanGetInstance(){
+    @Test void deckCanGetInstance(){
         Assertions.assertNotNull(deck);
     }
 
-    @Test
-    void deckShufflesCorrectly(){
+    @Test void deckShufflesCorrectly(){
         ArrayDeque<Card> d1, d2;
         d1 = deck.getCards();
         deck.shuffle();
@@ -34,8 +32,7 @@ public class DeckTest {
         Assertions.assertNotEquals(Deck.SIZE -1, i);
     }
 
-    @Test
-    void cardReintroductionWorksAsIntended(){
+    @Test void cardReintroductionWorksAsIntended(){
         deck.draw();
         deck.draw();
         deck.draw();
@@ -44,7 +41,19 @@ public class DeckTest {
         Assertions.assertEquals(Deck.SIZE, deck.getCards().size());
     }
 
-
+    @Test void CardAmountDoesNotChangeAfterEveryShuffle(){
+        int expected = 52;
+        Random rng = new Random();
+        Assertions.assertEquals(expected, deck.getCards().size());
+        for (int i =0; i < 30; i++){
+            for (int j = 0; j < rng.nextInt(1, 10); j++){
+                deck.draw();
+            }
+            Assertions.assertNotEquals(expected, deck.getCards().size());
+            deck.shuffle();
+            Assertions.assertEquals(expected, deck.getCards().size());
+        }
+    }
 
 
 }
