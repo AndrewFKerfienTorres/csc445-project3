@@ -30,13 +30,7 @@ public class PlayerHand {
 
     public HandState addDrawn(Card c){
         currentValue += c.getValue();
-        if (currentValue == 21){
-            status = LIMIT;
-        }else if (currentValue >21){
-            status = ABOVE_LIMIT;
-        }else{
-            if (status != BELOW_LIMIT) status = BELOW_LIMIT;
-        }
+        status = checkState(currentValue);
         return status;
     }
 
@@ -47,6 +41,17 @@ public class PlayerHand {
 
     public int getValue(){
         return currentValue;
+    }
+
+    public static HandState checkState(int val){
+        if (val == 21){
+            return LIMIT;
+        } else if (val < 21){
+            return BELOW_LIMIT;
+        } else if (val > 21){
+            return ABOVE_LIMIT;
+        }
+        else throw new IllegalArgumentException("State could not be checked.");
     }
 
 
