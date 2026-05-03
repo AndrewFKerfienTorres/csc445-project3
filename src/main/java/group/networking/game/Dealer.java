@@ -29,14 +29,29 @@ public class Dealer {
         return handState;
     }
 
-    public HandState dealTo(PlayerHand player){
+    public HandState dealInitialTo(PlayerHand player){
         Card c1 = deck.draw();
         Card c2 = deck.draw();
         player.addDrawn(c1);
         return player.addDrawn(c2);
     }
 
+    public HandState dealTo(PlayerHand player){
+        Card c = deck.draw();
+        return player.addDrawn(c);
+    }
 
+    //because it is a rule that the dealer hit if <17, and stand if >= 17
 
+    public HandState takeTurn(PlayerHand[] hands){
+        if (handValue >= 17){
+            return handState; // STAND
+        } else{
+            Card c = deck.draw();
+            handValue += c.getValue();
+            handState = PlayerHand.checkState(handValue);
+            return handState;
+        }
+    }
 
 }
