@@ -7,12 +7,12 @@ public class PlayerHand {
     //  ============== REPLACE THIS FOR SOME OTHER PLAYER ID BASED ON THE NETWORKING SIDE IF DIFFERENT =================
     private long id;
     private HandState status;
-    private long currentValue;
+    private int currentValue;
 
     public PlayerHand(long id){
         this.id = id;
         status = BELOW_LIMIT;
-        currentValue = 0L;
+        currentValue = 0;
     }
     /*
      * Storing the actual card is not needed, we only need to keep track of the value.
@@ -41,11 +41,13 @@ public class PlayerHand {
     }
 
     public void reset(){
-        currentValue = 0L;
+        currentValue = 0;
         status = BELOW_LIMIT;
     }
 
-
+    public int getValue(){
+        return currentValue;
+    }
 
 
 
