@@ -55,6 +55,6 @@ public class StateManager implements StateMachine{
 
     @Override
     public Object getNewTermOperation() {
-        return null;
+        return "NOT_NULL";
     }
 }
