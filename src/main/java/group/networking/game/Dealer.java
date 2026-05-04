@@ -54,4 +54,8 @@ public class Dealer {
         }
     }
 
+    public void shuffle(){
+        deck.shuffle();
+    }
+
 }
