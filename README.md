@@ -15,5 +15,5 @@ TODO: haven't read the code yet for the raft part.
 
 # Project made by these three people:
 - Andrew F. Kerfien Torres
-- 
+- Xander O'Hara
 - 
