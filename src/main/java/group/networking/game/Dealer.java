@@ -8,6 +8,8 @@ public class Dealer {
     private int handValue;
     private HandState handState;
 
+
+
     private Dealer(){
         deck = Deck.getInstance();
         handValue = 0;
@@ -55,6 +57,16 @@ public class Dealer {
     }
 
     public void shuffle(){
+        deck.shuffle();
+    }
+
+    public int getHandValue(){
+        return handValue;
+    }
+
+    public void reset(){
+        handState = HandState.BELOW_LIMIT;
+        handValue = 0;
         deck.shuffle();
     }
 
