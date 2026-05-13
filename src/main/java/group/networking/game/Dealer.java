@@ -45,19 +45,24 @@ public class Dealer {
 
     //because it is a rule that the dealer hit if <17, and stand if >= 17
 
-    public HandState takeTurn(PlayerHand[] hands){
+    public HandState takeTurn(){
         if (handValue >= 17){
             return handState; // STAND
         } else{
             Card c = deck.draw();
+
+            if (c.getRank().equalsIgnoreCase("A")){
+                if (handValue + 11 > 21){
+                    c.setLow();
+                } else{
+                    c.setHigh();
+                }
+            }
+
             handValue += c.getValue();
             handState = PlayerHand.checkState(handValue);
             return handState;
         }
-    }
-
-    public void shuffle(){
-        deck.shuffle();
     }
 
     public int getHandValue(){

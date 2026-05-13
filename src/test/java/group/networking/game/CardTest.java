@@ -7,8 +7,12 @@ public class CardTest {
 
     @Test
     void canGetCards(){
-        Card c1 = new Card(Suit.SPADES, "10");
-        Card c2 = new Card(Suit.SPADES, "q");
+        Card c1 = new Card(Suit.SPADES, "2");
+        c1.setRank("10");
+        Assertions.assertEquals(10, c1.getValue());
+        Card c2 = new Card(Suit.HEARTS, "q");
+        c2.setSuit(Suit.SPADES);
+        Assertions.assertEquals(Suit.SPADES, c2.getSuit());
         Card c3 = new Ace(Suit.HEARTS);
         Card c4 = new Card(Suit.HEARTS, "z");
 
