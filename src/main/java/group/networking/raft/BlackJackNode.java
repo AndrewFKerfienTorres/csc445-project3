@@ -20,7 +20,7 @@ public class BlackJackNode {
     private static final int LOBBY_PORT   = 7777;
     private static final int RAFT_BASE    = 9000;
     private static final int MAX_RETRIES  = 15;
-    private static final int RETRY_DELAY  = 2000;
+    private static final int RETRY_DELAY  = 100;
 
     private RaftNode raftNode;
     private String playerName;
@@ -125,8 +125,7 @@ public class BlackJackNode {
                             String joinerIp   = in.readUTF();
                             int    joinerRaftPort = RAFT_BASE + assignedId;
 
-                            TCPEndpoint joinerEndpoint = new TCPEndpoint(
-                                    String.valueOf(assignedId), joinerIp, joinerRaftPort);
+                            TCPEndpoint joinerEndpoint = new TCPEndpoint(String.valueOf(assignedId), joinerIp, joinerRaftPort);
 
                             // Send joiner their assignment
                             out.writeInt(assignedId);
@@ -140,14 +139,31 @@ public class BlackJackNode {
 
                             // WAIT for joiner to signal they're ready
                             boolean ready = in.readBoolean();
-                            if (!ready) {
+                            if (ready) {
+
+                                long currentCommitIndex = node.getReport().join().getResult().getCommittedMembers().getLogIndex();
+
+                                System.out.println("[Raft] Adding node " + assignedId + " at membership index: " + currentCommitIndex);
+
+                                node.changeMembership(joinerEndpoint, 
+                                    io.microraft.MembershipChangeMode.ADD_OR_PROMOTE_TO_FOLLOWER, 
+                                    currentCommitIndex)
+                                    .thenAccept(response -> {
+                                        System.out.println("[Raft] Node " + assignedId + " is now a voting member.");
+                                        allEndpoints.add(joinerEndpoint);
+                                    })
+                                    .exceptionally(ex -> {
+                                        System.err.println("[Raft] Failed to add node " + assignedId + ": " + ex.getMessage());
+                                        return null;
+                                    });
+
+                                joinerSocketMap.put(assignedId, joinerSocket);
+                                joinerEndpointMap.put(assignedId, joinerEndpoint);
+                            } else {
                                 System.err.println("[Lobby] Joiner startup failed.");
                                 return;
                             }
 
-                            // Store socket and endpoint for later
-                            joinerSocketMap.put(assignedId, joinerSocket);
-                            joinerEndpointMap.put(assignedId, joinerEndpoint);
                             System.out.println("[Lobby] " + joinerName + " (node " + assignedId + ") ready!");
 
                             // Send preliminary "not rejected" signal (game hasn't started yet)
@@ -199,56 +215,6 @@ public class BlackJackNode {
 
         Thread.sleep(2000);
         
-        for (Map.Entry<Integer, TCPEndpoint> entry : joinerEndpointMap.entrySet()) {
-            int nodeId = entry.getKey();
-            TCPEndpoint endpoint = entry.getValue();
-            
-            try {
-                System.out.println("[DEBUG] Adding node " + nodeId + " to cluster...");
-                
-                node.changeMembership(endpoint,
-                        io.microraft.MembershipChangeMode.ADD_LEARNER, 0)
-                        .join();
-                
-                System.out.println("[DEBUG] Node " + nodeId + " added as learner");
-                
-                System.out.println("[DEBUG] Waiting for learner log replication...");
-                int maxRetries = 200;  // 40 seconds
-                boolean synchronized_ = false;
-                
-                for (int i = 0; i < maxRetries; i++) {
-                    try {
-                        var report = node.getReport().join().getResult();
-                        if (report.getStatus().toString().equals("ACTIVE")) {
-                            System.out.println("[DEBUG] Cluster is ACTIVE  learner logs replicated");
-                            synchronized_ = true;
-                            break;
-                        }
-                    } catch (Exception ignored) {}
-                    Thread.sleep(200);
-                }
-                
-                if (!synchronized_) {
-                    System.out.println("[WARNING] Learner sync timeout, proceeding anyway");
-                }
-                Thread.sleep(2000);
-                
-                System.out.println("[DEBUG] Promoting node " + nodeId + " to voting member...");
-                node.changeMembership(endpoint,
-                        io.microraft.MembershipChangeMode.ADD_OR_PROMOTE_TO_FOLLOWER, 0)
-                        .join();
-                
-                System.out.println("[DEBUG] Node " + nodeId + " promoted successfully");
-                allEndpoints.add(endpoint);
-                
-                Thread.sleep(2000);
-                
-            } catch (Exception e) {
-                System.err.println("[ERROR] Failed to add node " + nodeId + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
         System.out.println("[Host] Game starting with " + allEndpoints.size() + " player(s).");
 
         if (!joinerSockets.isEmpty()) {
@@ -308,6 +274,8 @@ public class BlackJackNode {
         List<RaftEndpoint> initialGroup = new ArrayList<>(existingMembers);
         TCPEndpoint myEndpoint = new TCPEndpoint(String.valueOf(myNodeId), myIp, RAFT_BASE + myNodeId);
 
+        initialGroup.add(myEndpoint);
+
         TCPTransport transport = new TCPTransport(myEndpoint);
         RaftServer   raftServer = new RaftServer(RAFT_BASE + myNodeId);
 
@@ -341,6 +309,11 @@ public class BlackJackNode {
 
         System.out.println("[Lobby] Game starting!");
         waitForLeader(node);
+
+        while (!node.getReport().join().getResult().getStatus().toString().equals("ACTIVE")) {
+            System.out.println("[Joining] Syncing cluster state...");
+            Thread.sleep(500);
+        }
 
         submitAction(node, new GameAction(GameAction.Type.JOIN, playerName));
 
@@ -391,17 +364,19 @@ public class BlackJackNode {
     private static void submitAction(RaftNode node, GameAction action) {
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
+                // If this node isn't the leader, this joins/fails almost instantly
                 Object result = node.replicate(action).join().getResult();
                 System.out.println("→ " + result);
                 return;
 
-            } catch (NotLeaderException e) {
-                // MicroRaft tells us we're not the leader.
-                // The actual leader will be elected shortly; just retry.
-                if (attempt < MAX_RETRIES) {
-                    System.out.println("[Forwarding to leader... attempt " + attempt + "]");
-                    sleep(500);
+            } catch (CompletionException e) {
+                if (e.getCause() instanceof NotLeaderException nle) {
+                    if (nle.getLeader() != null) {
+                        System.err.println("[Error] I am a follower. Please send commands to Leader: " + nle.getLeader());
+                        return; // Exit immediately instead of retrying 15 times
+                    }
                 }
+                sleep(RETRY_DELAY);
 
             } catch (Exception e) {
                 if (attempt < MAX_RETRIES) {
