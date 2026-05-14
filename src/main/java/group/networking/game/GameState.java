@@ -29,8 +29,14 @@ public class GameState implements Serializable {
     }
 
 
-    public void addPlayer(String playerId) {
+    public boolean addPlayer(String playerId) {
+        if (playerIds.contains(playerId)) return false;
         playerIds.add(playerId);
+        return true;
+    }
+
+    public boolean hasPlayer(String playerId) {
+        return playerIds.contains(playerId);
     }
 
     public List<String> getPlayerIds() {
@@ -64,4 +70,5 @@ public class GameState implements Serializable {
 
     @Override
     public String toString() { return getSummary(); }
+
 }
