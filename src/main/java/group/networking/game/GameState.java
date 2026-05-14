@@ -24,6 +24,8 @@ public class GameState implements Serializable {
 
     HashMap<String, PlayerHand> players = new HashMap<>();
     Dealer dealer = Dealer.getInstance();
+    HashMap<String, Integer> betByPlayer = new HashMap<>();
+    HashMap<String, Integer> funds = new HashMap<>();
 
     public Phase getCurrentPhase() {
         return currentPhase;
@@ -38,6 +40,7 @@ public class GameState implements Serializable {
         if (playerIds.contains(playerId)) return false;
         playerIds.add(playerId);
         players.put(playerId, new PlayerHand(playerId));
+        funds.put(playerId, 10000);
         return true;
     }
 
@@ -82,7 +85,7 @@ public class GameState implements Serializable {
     public boolean stand(String playerId) {
 
 
-        return true; // TODO, My guess is for you to get the next player (?)
+        return true; // TODO Is this for state not related to game objects?
 
     }
 
@@ -113,20 +116,35 @@ public class GameState implements Serializable {
     }
 
     public boolean allBetsPlaced() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'allBetsPlaced'");
+
+        //TODO ==========================================================
+
+        for (Integer i : betByPlayer.values()){
+            if (i <= 0) return false;
+        }
+
+        return true;
     }
 
     public String placeBet(String playerId, int amount) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'placeBet'");
+
+        //TODO ==========================================================
+        //TODO I guess we'll need an initial amount of points for every player?
+
+        pot += amount;
+        funds.put(playerId, (funds.getOrDefault(playerId, 0)-1));
+        
+        if (funds.get(playerId) <= 0) return "not enough funds.";
+
+        betByPlayer.put(playerId, (betByPlayer.getOrDefault(playerId, 0) + amount));
+
+        return String.format("player %s dealt %d, current pot: %d", playerId, amount, pot);
     }
 
     public List<String> getDealerHand() {
 
-        // isn't this supposed to be List<String> like player's hand?
-
        return Arrays.asList(dealer.getHand());
+
     }
 
     public String calculatePayout() {
