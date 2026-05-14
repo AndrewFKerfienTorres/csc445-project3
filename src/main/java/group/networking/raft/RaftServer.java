@@ -29,6 +29,10 @@ public class RaftServer {
     private final String trustInputStream;
     private final String trustPass;
 
+    public RaftServer(int port) {
+        this(port, null, null, null, null);
+    }
+
     public RaftServer(int port, String certInputStream, String certificatePass, String trustInputStream, String trustPass) {
         this.port = port;
         this.certInputStream = certInputStream;
@@ -40,15 +44,16 @@ public class RaftServer {
     public void start(RaftNode node) throws Exception {
         this.raftNode = node;
 
-        SSLContext sslContext = createSSLContext();
-        //....
-        SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
-
-        SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
-
-        sslServerSocket.setNeedClientAuth(true);
-
-        this.serverSocket = sslServerSocket;
+        if (certInputStream != null && trustInputStream != null) {
+            SSLContext sslContext = createSSLContext();
+            SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
+            SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
+            sslServerSocket.setNeedClientAuth(true);
+            this.serverSocket = sslServerSocket;
+        } else {
+            // Fallback to a standard ServerSocket for tests and local play
+            this.serverSocket = new ServerSocket(port);
+        }
 
         this.running.set(true);
 

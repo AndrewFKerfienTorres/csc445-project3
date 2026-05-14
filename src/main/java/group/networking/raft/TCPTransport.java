@@ -27,6 +27,15 @@ public class TCPTransport implements Transport {
 
     private final SSLSocketFactory sslSocketFactory;
 
+    public TCPTransport(TCPEndpoint localEndpoint) {
+        this.localEndpoint = localEndpoint;
+        this.certInputStream = null;
+        this.certificatePass = null;
+        this.trustInputStream = null;
+        this.trustPass = null;
+        this.sslSocketFactory = null;
+    }
+
     public TCPTransport(TCPEndpoint localEndpoint, String certInputStream, String certificatePass, String trustInputStream, String trustPass) throws Exception {
 
         this.localEndpoint = localEndpoint;
@@ -80,7 +89,9 @@ public class TCPTransport implements Transport {
 
 
     private void doSend(TCPEndpoint target, RaftMessage message) {
-        try (SSLSocket socket = (SSLSocket) sslSocketFactory.createSocket(target.getHost(), target.getPort());
+        try (Socket socket = sslSocketFactory != null ?
+                sslSocketFactory.createSocket(target.getHost(), target.getPort()) :
+                new Socket(target.getHost(), target.getPort());
              ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
 
 
