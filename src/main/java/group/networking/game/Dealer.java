@@ -61,6 +61,10 @@ public class Dealer {
 
     public HandState dealTo(PlayerHand player){
         Card c = deck.draw();
+        if (isAce(c)){
+            if (player.getValue() + 11 > 21) c.setLow();
+            else c.setHigh();
+        }
         return player.addDrawn(c);
     }
 
