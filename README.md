@@ -5,13 +5,9 @@
 > are valued in 10. The ace may be either a one or an eleven.
 > An ace and any 10-point card as a combo is called a 'BlackJack'. this combo is 11 + 10, right at 21.
 
-# Raft protocol
+Project uses: raft (via micro raft), as well as mTLS.
 
-TODO: haven't read the code yet for the raft part.
-
-# How it works
-
-
+project 3 for CSC 445 spring '26
 
 # Project made by these three people:
 - Andrew F. Kerfien Torres
