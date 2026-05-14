@@ -71,4 +71,70 @@ public class GameState implements Serializable {
     @Override
     public String toString() { return getSummary(); }
 
+    public boolean stand(String playerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'stand'");
+    }
+
+    public boolean bust(String playerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'bust'");
+    }
+
+    public List<String> getHand(String playerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getHand'");
+    }
+
+    public int hit(String playerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'hit'");
+    }
+
+    public void dealInitialCards(long commitIndex) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'dealInitialCards'");
+    }
+
+    public boolean allBetsPlaced() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'allBetsPlaced'");
+    }
+
+    public String placeBet(String playerId, int amount) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'placeBet'");
+    }
+
+    public String getDealerHand() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDealerHand'");
+    }
+
+    public String calculatePayout() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'calculatePayout'");
+    }
+
+    public void runDealerTurn() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'runDealerTurn'");
+    }
+
+    public void resetForNextRound() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'resetForNextRound'");
+    }
+
+
+    public String doubleDown(String playerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'doubleDown'");
+    }
+
+    public static int getHandValue(int dealerHand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getHandValue'");
+    }
+
 }
