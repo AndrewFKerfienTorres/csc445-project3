@@ -67,8 +67,7 @@ public class NetworkedRaftTest {
     private static RaftNode buildNode(TCPEndpoint self, Collection<RaftEndpoint> allMembers)
             throws Exception {
 
-        String nodeID = self.getId();
-        String certPath = "node" + nodeID + ".p12";
+        String certPath = "node.p12";
         String trustPath = "truststore.p12";
         String pass = "password";
 
