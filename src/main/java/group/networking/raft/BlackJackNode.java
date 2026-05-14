@@ -71,7 +71,7 @@ public class BlackJackNode {
         TCPEndpoint myEndpoint = new TCPEndpoint(String.valueOf(myNodeId), myIp, raftPort);
         List<RaftEndpoint> initialGroup = List.of(myEndpoint);
 
-        System.out.println("[Host] Your IP is: " + myIp + " — share this with players joining.");
+        System.out.println("[Host] Your IP is: " + myIp + " share this with players joining.");
         System.out.println("[Host] Starting single-node Raft cluster...");
 
         TCPTransport transport = new TCPTransport(myEndpoint);
@@ -220,7 +220,7 @@ public class BlackJackNode {
                     try {
                         var report = node.getReport().join().getResult();
                         if (report.getStatus().toString().equals("ACTIVE")) {
-                            System.out.println("[DEBUG] Cluster is ACTIVE - learner logs replicated");
+                            System.out.println("[DEBUG] Cluster is ACTIVE  learner logs replicated");
                             synchronized_ = true;
                             break;
                         }
