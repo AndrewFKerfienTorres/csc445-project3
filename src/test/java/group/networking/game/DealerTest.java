@@ -48,9 +48,7 @@ public class DealerTest {
 	// this is to make sure that most possibilities are covered.
 	@Test void DealerChoosesActionCorrectly(){ for (int i =0; i < 50; i++){
 		dealer.dealInitialSelf();
-
 		int a = dealer.getHandValue();
-
 		if (a >= 17){
 			dealer.takeTurn();
 			int b = dealer.getHandValue();
@@ -62,15 +60,8 @@ public class DealerTest {
 		}else if (a <= 0){
 			Assertions.fail();
 		}
-
-
-
 		dealer.reset();
 		}}
-
-
-
-
 
 
 }
