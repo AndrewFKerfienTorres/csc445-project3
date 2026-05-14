@@ -17,22 +17,25 @@ public class NetworkedRaftTest {
         TCPEndpoint ep1 = new TCPEndpoint("1", "localhost", 9001);
         TCPEndpoint ep2 = new TCPEndpoint("2", "localhost", 9002);
         TCPEndpoint ep3 = new TCPEndpoint("3", "localhost", 9003);
+        TCPEndpoint ep4 = new TCPEndpoint("4", "localhost", 9004);
 
-        List<RaftEndpoint> members = List.of(ep1, ep2, ep3);
+        List<RaftEndpoint> members = List.of(ep1, ep2, ep3, ep4);
 
         RaftNode node1 = buildNode(ep1, members);
         RaftNode node2 = buildNode(ep2, members);
         RaftNode node3 = buildNode(ep3, members);
+        RaftNode node4 = buildNode(ep4, members);
 
         node1.start();
         node2.start();
         node3.start();
+        node4.start();
 
         System.out.println("started, waiting for leader election...");
         Thread.sleep(4000);
 
         // finds the leader
-        for (RaftNode node : List.of(node1, node2, node3)) {
+        for (RaftNode node : List.of(node1, node2, node3, node4)) {
             if (node.getReport().join().getResult().getRole() == RaftRole.LEADER) {
                 System.out.println(node.getLocalEndpoint() + " is the leader");
 
