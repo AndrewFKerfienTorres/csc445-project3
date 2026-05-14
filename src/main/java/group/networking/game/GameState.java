@@ -75,11 +75,15 @@ public class GameState implements Serializable {
     }
 
     @Override
-    public String toString() { return getSummary(); }
+    public String toString() {
+        return getSummary();
+    }
 
     public boolean stand(String playerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'stand'");
+
+
+        return true; // TODO, My guess is for you to get the next player (?)
+
     }
 
     public boolean bust(String playerId) {
@@ -100,17 +104,12 @@ public class GameState implements Serializable {
 
     public void dealInitialCards(long commitIndex) {
 
-        // game part
-
         dealer.dealInitialSelf();
         for (PlayerHand p : players.values()){
             dealer.dealInitialTo(p);
         }
 
 
-
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dealInitialCards'");
     }
 
     public boolean allBetsPlaced() {
@@ -123,16 +122,11 @@ public class GameState implements Serializable {
         throw new UnsupportedOperationException("Unimplemented method 'placeBet'");
     }
 
-    public String getDealerHand() {
+    public List<String> getDealerHand() {
 
         // isn't this supposed to be List<String> like player's hand?
 
-        String dealerHand = "";
-        for (String s : dealer.getHand()){
-            dealerHand += s + "\n";
-        }
-        return dealerHand;
-
+       return Arrays.asList(dealer.getHand());
     }
 
     public String calculatePayout() {
