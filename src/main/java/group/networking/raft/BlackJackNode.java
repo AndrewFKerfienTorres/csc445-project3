@@ -366,7 +366,7 @@ public class BlackJackNode {
             try {
                 // If this node isn't the leader, this joins/fails almost instantly
                 Object result = node.replicate(action).join().getResult();
-                System.out.println("→ " + result);
+                System.out.println("-> " + result);
                 return;
 
             } catch (CompletionException e) {

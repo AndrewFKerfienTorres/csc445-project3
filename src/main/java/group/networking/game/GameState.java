@@ -213,9 +213,8 @@ public class GameState implements Serializable {
 
     }
 
-    public static int getHandValue(int dealerHand) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getHandValue'");
+    public static int getHandValue(List<String> dealerHand) {
+        return 5;
     }
 
 }

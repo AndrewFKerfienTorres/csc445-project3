@@ -97,7 +97,7 @@ public class StateManager implements StateMachine {
 
                 boolean allDone = gameState.stand(playerId);
                 String standMsg = playerId + " stands with " + gameState.getHand(playerId)
-                        + " = " + GameState.handValue(gameState.getHand(playerId));
+                        + " = " + GameState.getHandValue(gameState.getHand(playerId));
 
                 if (allDone) {
                     return standMsg + "\n" + runDealerAndPayout();
@@ -116,7 +116,7 @@ public class StateManager implements StateMachine {
                 if (doubleError != null) return doubleError;
 
                 List<String> hand = gameState.getHand(playerId);
-                int handValue = GameState.handValue(hand);
+                int handValue = GameState.getHandValue(hand);
                 String doubleMsg = playerId + " doubles down → " + hand + " = " + handValue
                         + (handValue > 21 ? " BUST!" : "");
 
