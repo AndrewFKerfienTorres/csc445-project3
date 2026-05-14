@@ -7,7 +7,7 @@ public class Dealer {
 
     private int handValue;
     private HandState handState;
-
+    private String hand;
 
 
     private Dealer(){
@@ -21,6 +21,10 @@ public class Dealer {
             dealer = new Dealer();
         }
         return dealer;
+    }
+
+    public String[] getHand(){
+        return hand.split("\n");
     }
 
     public HandState dealInitialSelf(){
@@ -38,6 +42,7 @@ public class Dealer {
         }
 
         handValue += (card1.getValue() + card2.getValue());
+        hand += card1.toString() + card2.toString();
         handState = PlayerHand.checkState(handValue);
         return handState;
     }

@@ -17,6 +17,14 @@ public class PlayerHand {
         currentValue = 0;
     }
 
+    public String[] getHand(){
+        return hand.split("\n");
+    }
+
+    public HandState getStatus(){
+        return status;
+    }
+
 
     public HandState addDrawn(Card c){
         currentValue += c.getValue();

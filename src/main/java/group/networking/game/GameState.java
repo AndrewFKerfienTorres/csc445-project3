@@ -2,6 +2,7 @@ package group.networking.game;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -82,27 +83,32 @@ public class GameState implements Serializable {
     }
 
     public boolean bust(String playerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'bust'");
+        PlayerHand p = players.get(playerId);
+        return (p.getStatus() == HandState.ABOVE_LIMIT);
     }
 
     public List<String> getHand(String playerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getHand'");
+        PlayerHand p = players.get(playerId);
+        return Arrays.asList(p.getHand());
     }
 
     public int hit(String playerId) {
-        // TODO Auto-generated method stub
-
         PlayerHand p = players.get(playerId);
         dealer.dealTo(p);
         return p.getValue();
-
-
-        
     }
 
     public void dealInitialCards(long commitIndex) {
+
+        // game part
+
+        dealer.dealInitialSelf();
+        for (PlayerHand p : players.values()){
+            dealer.dealInitialTo(p);
+        }
+
+
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'dealInitialCards'");
     }
@@ -118,8 +124,15 @@ public class GameState implements Serializable {
     }
 
     public String getDealerHand() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDealerHand'");
+
+        // isn't this supposed to be List<String> like player's hand?
+
+        String dealerHand = "";
+        for (String s : dealer.getHand()){
+            dealerHand += s + "\n";
+        }
+        return dealerHand;
+
     }
 
     public String calculatePayout() {
@@ -128,13 +141,17 @@ public class GameState implements Serializable {
     }
 
     public void runDealerTurn() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'runDealerTurn'");
+
+        dealer.takeTurn();
+
+
     }
 
     public void resetForNextRound() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'resetForNextRound'");
+
+        dealer.reset();
+
+
     }
 
 
