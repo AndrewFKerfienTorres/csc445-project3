@@ -25,6 +25,9 @@ public class PlayerHand {
         return status;
     }
 
+    public String getId() {
+        return id;
+    }
 
     public HandState addDrawn(Card c){
         currentValue += c.getValue();

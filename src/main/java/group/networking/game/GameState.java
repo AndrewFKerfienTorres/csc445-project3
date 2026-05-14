@@ -133,7 +133,7 @@ public class GameState implements Serializable {
 
         pot += amount;
         funds.put(playerId, (funds.getOrDefault(playerId, 0)-1));
-        
+
         if (funds.get(playerId) <= 0) return "not enough funds.";
 
         betByPlayer.put(playerId, (betByPlayer.getOrDefault(playerId, 0) + amount));
@@ -148,6 +148,38 @@ public class GameState implements Serializable {
     }
 
     public String calculatePayout() {
+
+        List<PlayerHand> winners = new ArrayList<>();
+        boolean dealerIsWinner = false;
+
+        for (PlayerHand p : players.values()){
+            if (p.getStatus() == HandState.ABOVE_LIMIT) continue;
+            winners.add(p);
+        }
+
+        if (dealer.getHandValue() > 21) dealerIsWinner = false;
+        else dealerIsWinner = true;
+
+        for (PlayerHand p : winners){
+            if (p.getValue() < dealer.getHandValue() && dealer.getHandValue() <= 21){
+                winners.remove(p);
+            }else if (p.getValue() > dealer.getHandValue()){
+                dealerIsWinner = false;
+            }
+        }
+
+        int perPlayerReward;
+        int numberOfSplits = winners.size();
+
+        if(dealerIsWinner) numberOfSplits++;
+
+        perPlayerReward = (int) Math.floor((double) pot / numberOfSplits);
+
+        for (PlayerHand p : winners){
+            String id = p.getId();
+            funds.put(id, funds.get(id) + perPlayerReward);
+        }
+
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'calculatePayout'");
     }
@@ -162,14 +194,23 @@ public class GameState implements Serializable {
     public void resetForNextRound() {
 
         dealer.reset();
-
+        pot = 0;
+        betByPlayer.clear();
 
     }
 
 
     public String doubleDown(String playerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'doubleDown'");
+
+        int bet = betByPlayer.get(playerId);
+        if (funds.get(playerId) - bet < 0) return "not enough funds.";
+
+        funds.put(playerId, funds.get(playerId) - bet);
+        pot += bet;
+        betByPlayer.put(playerId, betByPlayer.get(playerId)*2);
+
+        return String.format("%s doubled down! current pot: %d", playerId, pot);
+
     }
 
     public static int getHandValue(int dealerHand) {
