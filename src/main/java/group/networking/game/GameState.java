@@ -180,8 +180,7 @@ public class GameState implements Serializable {
             funds.put(id, funds.get(id) + perPlayerReward);
         }
 
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'calculatePayout'");
+        return String.valueOf(perPlayerReward);
     }
 
     public void runDealerTurn() {
