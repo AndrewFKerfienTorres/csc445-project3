@@ -67,10 +67,17 @@ public class NetworkedRaftTest {
     private static RaftNode buildNode(TCPEndpoint self, Collection<RaftEndpoint> allMembers)
             throws Exception {
 
-        TCPTransport transport = new TCPTransport(self);
+        String nodeID = self.getId();
+        String certPath = "node" + nodeID + ".p12";
+        String trustPath = "truststore.p12";
+        String pass = "password";
+
+        //PasswordForTesting is the password
+        //https://docs.oracle.com/cd/E19798-01/821-1841/gjrgy/ to create certs.
+        TCPTransport transport = new TCPTransport(self, certPath, pass, trustPath, pass);
 
         // Starting the server before building the node so it's ready to receive messages from other nodes during leader election
-        RaftServer server = new RaftServer(self.getPort());
+        RaftServer server = new RaftServer(self.getPort(), certPath, pass, trustPath, pass);
 
         RaftNode node = RaftNode.newBuilder()
                 .setGroupId("blackjack")
