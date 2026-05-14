@@ -2,6 +2,7 @@ package group.networking.game;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GameState implements Serializable {
@@ -20,6 +21,9 @@ public class GameState implements Serializable {
     private String currentPlayerId = null;
     private int pot = 0;
 
+    HashMap<String, PlayerHand> players = new HashMap<>();
+    Dealer dealer = Dealer.getInstance();
+
     public Phase getCurrentPhase() {
         return currentPhase;
     }
@@ -32,6 +36,7 @@ public class GameState implements Serializable {
     public boolean addPlayer(String playerId) {
         if (playerIds.contains(playerId)) return false;
         playerIds.add(playerId);
+        players.put(playerId, new PlayerHand(playerId));
         return true;
     }
 
@@ -88,7 +93,13 @@ public class GameState implements Serializable {
 
     public int hit(String playerId) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'hit'");
+
+        PlayerHand p = players.get(playerId);
+        dealer.dealTo(p);
+        return p.getValue();
+
+
+        
     }
 
     public void dealInitialCards(long commitIndex) {

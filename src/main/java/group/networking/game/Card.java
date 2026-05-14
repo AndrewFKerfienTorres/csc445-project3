@@ -59,4 +59,9 @@ public class Card {
     public void setHigh(){}
     public void setLow(){};
 
+    @Override
+    public String toString(){
+        return "%s of %s\n".format(rank, suit);
+    }
+
 }

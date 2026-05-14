@@ -31,7 +31,7 @@ public class DealerTest {
 	}
 	@Test void DealingInitialCardsToPlayers(){
 
-		PlayerHand[] players = {new PlayerHand(0L), new PlayerHand(1L), new PlayerHand(2L)};
+		PlayerHand[] players = {new PlayerHand("0"), new PlayerHand("1"), new PlayerHand("2")};
 
 		dealer.dealInitialSelf();
 		for (PlayerHand p: players){
