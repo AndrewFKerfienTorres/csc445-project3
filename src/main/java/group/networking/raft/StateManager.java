@@ -50,6 +50,7 @@ public class StateManager implements StateMachine {
                     return "Not in dealing phase (current: " + phase + ")";
                 }
                 String initialHands = gameState.dealInitialCards(commitIndex);
+		gameState.startPlayerTurns();
                 gameState.setPhase(GameState.Phase.PLAYER_TURNS);
                 StringBuilder sb = new StringBuilder("Cards dealt!\n");
                 sb.append(gameState.getSummary());

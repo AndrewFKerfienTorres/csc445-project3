@@ -148,7 +148,7 @@ public class BlackJackNode {
                             if (ready) {
 
                                 long currentCommitIndex = node.getReport().join().getResult().getCommittedMembers().getLogIndex();
-
+				
                                 System.out.println("[Raft] Adding node " + assignedId + " at membership index: " + currentCommitIndex);
 
                                 node.changeMembership(joinerEndpoint, 
@@ -260,7 +260,7 @@ public class BlackJackNode {
 
         out.writeUTF(playerName);
         //String myIp = getLocalIp();
-        String myIp = lobbySocket.getLocalAddress().getHostAddress();
+	String myIp = lobbySocket.getLocalAddress().getHostAddress();
         out.writeUTF(myIp);
         out.flush();
 

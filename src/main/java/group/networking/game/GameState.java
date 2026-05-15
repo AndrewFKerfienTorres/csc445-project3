@@ -97,8 +97,7 @@ public class GameState implements Serializable {
     }
 
     public boolean bust(String playerId) {
-        PlayerHand p = players.get(playerId);
-        return (p.getStatus() == HandState.ABOVE_LIMIT);
+        return stand(playerId);
     }
 
     public List<String> getHand(String playerId) {
@@ -225,16 +224,20 @@ public class GameState implements Serializable {
         int aceCount = 0;
 
         for (String card : hand) {
-            if (card.equals("J") || card.equals("Q") || card.equals("K") || card.equals("10")) {
+	    if (card == null || card.trim().isEmpty() || card.trim().equals(",")) {
+                continue;
+            }
+            String cleaned = card.replace("[", "").replace("]", "").trim().split(" ")[0].toUpperCase();
+            if (cleaned.equals("J") || cleaned.equals("Q") || cleaned.equals("K") || cleaned.equals("10")) {
                 value += 10;
             }
 
-            else if (card.equals("A")) {
+            else if (cleaned.equals("A")) {
                 aceCount++;
                 value += 11;
             }
             else
-                value += Integer.parseInt(card);
+                value += Integer.parseInt(cleaned);
         }
 
         while (value > 21 && aceCount > 0) {
@@ -243,5 +246,12 @@ public class GameState implements Serializable {
         }
 
         return value;
+    }   public void startPlayerTurns() {
+    this.currentPhase = Phase.PLAYER_TURNS;
+    if (!playerIds.isEmpty()) {
+        this.currentPlayerId = playerIds.get(0);
+    } else {
+        this.currentPhase = Phase.WAITING;
     }
+}
 }
