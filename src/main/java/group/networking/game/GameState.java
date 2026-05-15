@@ -116,29 +116,22 @@ public class GameState implements Serializable {
     }
 
     public boolean allBetsPlaced() {
+        if (playerIds.isEmpty()) return false;
 
-        //TODO ==========================================================
-
-        for (Integer i : betByPlayer.values()){
-            if (i <= 0) return false;
-        }
-
-        return true;
+        return betByPlayer.size() == playerIds.size();
     }
 
     public String placeBet(String playerId, int amount) {
+        int currentFunds = funds.getOrDefault(playerId, 0);
+        if (currentFunds <= 0) return "not enough funds.";
 
-        //TODO ==========================================================
-        //TODO I guess we'll need an initial amount of points for every player?
-
+        funds.put(playerId, (currentFunds-amount));
         pot += amount;
-        funds.put(playerId, (funds.getOrDefault(playerId, 0)-1));
 
-        if (funds.get(playerId) <= 0) return "not enough funds.";
+        betByPlayer.put(playerId, amount);
 
-        betByPlayer.put(playerId, (betByPlayer.getOrDefault(playerId, 0) + amount));
-
-        return String.format("player %s dealt %d, current pot: %d", playerId, amount, pot);
+        return null;
+        //return String.format("player %s dealt %d, current pot: %d", playerId, amount, pot);
     }
 
     public List<String> getDealerHand() {
