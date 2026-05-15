@@ -61,7 +61,9 @@ public class Card {
 
     @Override
     public String toString(){
-        return "%s of %s\n".format(rank, suit);
+
+        String card = "[" + rank + " of " + suit + "]\n";
+        return card;
     }
 
 }

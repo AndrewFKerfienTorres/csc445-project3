@@ -4,14 +4,13 @@ import static group.networking.game.HandState.*;
 
 public class PlayerHand {
 
-    //  ============== REPLACE THIS FOR SOME OTHER PLAYER ID BASED ON THE NETWORKING SIDE IF DIFFERENT =================
     private String id;
     private HandState status;
     private int currentValue;
 
     private String hand = "";
 
-    public PlayerHand(String d){
+    public PlayerHand(String id){
         this.id = id;
         status = BELOW_LIMIT;
         currentValue = 0;
