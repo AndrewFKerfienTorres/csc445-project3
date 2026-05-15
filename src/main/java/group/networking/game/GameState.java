@@ -40,7 +40,8 @@ public class GameState implements Serializable {
         if (playerIds.contains(playerId)) return false;
         playerIds.add(playerId);
         players.put(playerId, new PlayerHand(playerId));
-        funds.put(playerId, 10000);
+        funds.put(playerId, 500);
+        System.out.println("Welcome " + playerId + "! Your starting balance is: " + funds.get(playerId));
         return true;
     }
 
@@ -185,6 +186,7 @@ public class GameState implements Serializable {
         for (PlayerHand p : winners){
             String id = p.getId();
             funds.put(id, funds.get(id) + perPlayerReward);
+            System.out.printf("%s won %d! New Balance: %d\n", id, perPlayerReward, funds.get(id) + perPlayerReward);
         }
 
         return String.valueOf(perPlayerReward);
@@ -202,6 +204,13 @@ public class GameState implements Serializable {
         dealer.reset();
         pot = 0;
         betByPlayer.clear();
+
+        for (PlayerHand p : players.values()) {
+            p.reset();
+        }
+
+        this.currentPhase = Phase.BETTING;
+        this.currentPlayerId = null;
 
     }
 
@@ -224,7 +233,7 @@ public class GameState implements Serializable {
         int aceCount = 0;
 
         for (String card : hand) {
-	    if (card == null || card.trim().isEmpty() || card.trim().equals(",")) {
+            if (card == null || card.trim().isEmpty() || card.trim().equals(",")) {
                 continue;
             }
             String cleaned = card.replace("[", "").replace("]", "").trim().split(" ")[0].toUpperCase();
@@ -246,12 +255,13 @@ public class GameState implements Serializable {
         }
 
         return value;
-    }   public void startPlayerTurns() {
-    this.currentPhase = Phase.PLAYER_TURNS;
-    if (!playerIds.isEmpty()) {
-        this.currentPlayerId = playerIds.get(0);
-    } else {
-        this.currentPhase = Phase.WAITING;
     }
-}
+    public void startPlayerTurns() {
+        this.currentPhase = Phase.PLAYER_TURNS;
+        if (!playerIds.isEmpty()) {
+            this.currentPlayerId = playerIds.get(0);
+        } else {
+            this.currentPhase = Phase.WAITING;
+        }
+    }
 }
