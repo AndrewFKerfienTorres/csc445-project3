@@ -25,11 +25,13 @@ public class BlackJackNode {
     private RaftNode raftNode;
     private String playerName;
     private int nodeId;
+    private static TCPEndpoint actionEndpoint;
 
-    public BlackJackNode(RaftNode raftNode, String playerName, int nodeId) {
-        this.raftNode   = raftNode;
+    public BlackJackNode(RaftNode raftNode, String playerName, int nodeId, TCPEndpoint actionEndpoint) {
+        this.raftNode = raftNode;
         this.playerName = playerName;
-        this.nodeId     = nodeId;
+        this.nodeId = nodeId;
+        this.actionEndpoint = actionEndpoint;
     }
 
     public static void main(String[] args) throws Exception {
@@ -89,6 +91,10 @@ public class BlackJackNode {
 
         raftServer.start(node);
         node.start();
+
+        ActionForwarder forwarder = new ActionForwarder(myNodeId);
+        forwarder.setRaftNode(node);
+        forwarder.start();
 
         waitForLeader(node);
 
@@ -238,7 +244,7 @@ public class BlackJackNode {
         submitAction(node, new GameAction(GameAction.Type.JOIN, playerName));
         submitAction(node, new GameAction(GameAction.Type.NEXT_PHASE, playerName));
 
-        return new BlackJackNode(node, playerName, myNodeId);
+        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint);
     }
 
 
@@ -291,6 +297,9 @@ public class BlackJackNode {
 
         raftServer.start(node);
         node.start();
+        ActionForwarder forwarder = new ActionForwarder(myNodeId);
+        forwarder.setRaftNode(node);
+        forwarder.start();
 
         System.out.println("[Joining] Raft node started on port " + (RAFT_BASE + myNodeId));
 
@@ -317,7 +326,7 @@ public class BlackJackNode {
 
         submitAction(node, new GameAction(GameAction.Type.JOIN, playerName));
 
-        return new BlackJackNode(node, playerName, myNodeId);
+        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint);
     }
 
     // Main game loop
@@ -360,36 +369,56 @@ public class BlackJackNode {
         submitAction(raftNode, action);
     }
 
-
     private static void submitAction(RaftNode node, GameAction action) {
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                // If this node isn't the leader, this joins/fails almost instantly
                 Object result = node.replicate(action).join().getResult();
                 System.out.println("-> " + result);
                 return;
 
             } catch (CompletionException e) {
-                if (e.getCause() instanceof NotLeaderException nle) {
-                    if (nle.getLeader() != null) {
-                        System.err.println("[Error] I am a follower. Please send commands to Leader: " + nle.getLeader());
-                        return; // Exit immediately instead of retrying 15 times
+                Throwable cause = e.getCause();
+                if (cause instanceof NotLeaderException nle && nle.getLeader() != null) {
+                    TCPEndpoint leaderEp = (TCPEndpoint) nle.getLeader();
+                    String result = forwardToLeader(leaderEp, action);
+                    if (result != null) {
+                        System.out.println("-> " + result);
+                        return;
                     }
+                    System.out.println("[Forward failed — waiting for re-election... " + attempt + "/" + MAX_RETRIES + "]");
+                } else {
+                    System.out.println("[Error: " + (cause != null ? cause.getMessage() : e.getMessage()) + "]");
+                    return;
                 }
                 sleep(RETRY_DELAY);
 
             } catch (Exception e) {
-                if (attempt < MAX_RETRIES) {
-                    System.out.println("[Leader unreachable, waiting for re-election... "
-                            + attempt + "/" + MAX_RETRIES + "]");
-                    sleep(RETRY_DELAY);
-                } else {
-                    System.out.println("[Action failed after " + MAX_RETRIES
-                            + " attempts: " + e.getMessage() + "]");
-                }
+                System.out.println("[Leader unreachable, waiting for re-election... " + attempt + "/" + MAX_RETRIES + "]");
+                sleep(RETRY_DELAY);
             }
         }
+        System.out.println("[Action failed after " + MAX_RETRIES + " attempts]");
     }
+
+    private static String forwardToLeader(TCPEndpoint leaderEp, GameAction action) {
+        int forwardPort = ActionForwarder.forwardPortFor(Integer.parseInt(leaderEp.getId()));
+        try (
+            Socket sock            = new Socket(leaderEp.getHost(), forwardPort);
+            ObjectOutputStream out = new ObjectOutputStream(sock.getOutputStream());
+            DataInputStream    in  = new DataInputStream(sock.getInputStream())
+        ) {
+            sock.setSoTimeout(5000);
+            out.writeObject(action);
+            out.flush();
+            String response = in.readUTF();
+            if (response.startsWith("OK ")) return response.substring(3);
+            System.out.println("[Leader error: " + response + "]");
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
 
 
     private static RaftConfig raftConfig() {
