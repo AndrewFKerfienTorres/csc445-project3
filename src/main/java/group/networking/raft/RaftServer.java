@@ -30,7 +30,7 @@ public class RaftServer {
     private final String trustPass;
 
     public RaftServer(int port) {
-        this(port, null, null, null, null);
+        this(port,"node.p12", "password", "truststore.p12", "password");
     }
 
     public RaftServer(int port, String certInputStream, String certificatePass, String trustInputStream, String trustPass) {
@@ -43,17 +43,15 @@ public class RaftServer {
 
     public void start(RaftNode node) throws Exception {
         this.raftNode = node;
-
-        if (certInputStream != null && trustInputStream != null) {
-            SSLContext sslContext = createSSLContext();
-            SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
-            SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
-            sslServerSocket.setNeedClientAuth(true);
-            this.serverSocket = sslServerSocket;
-        } else {
-            // Fallback to a standard ServerSocket for tests and local play
-            this.serverSocket = new ServerSocket(port);
-        }
+	if (certInputStream == null || trustInputStream == null) {
+        throw new IllegalStateException("mTLS certificates are missing! You dont belong here.");
+   	 }
+         SSLContext sslContext = createSSLContext();
+         SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
+         SSLServerSocket sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
+         sslServerSocket.setNeedClientAuth(true);
+         this.serverSocket = sslServerSocket;
+                
 
         this.running.set(true);
 

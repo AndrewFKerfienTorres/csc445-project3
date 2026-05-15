@@ -76,8 +76,20 @@ public class BlackJackNode {
         System.out.println("[Host] Your IP is: " + myIp + " share this with players joining.");
         System.out.println("[Host] Starting single-node Raft cluster...");
 
-        TCPTransport transport = new TCPTransport(myEndpoint);
-        RaftServer raftServer  = new RaftServer(raftPort);
+        TCPTransport transport = new TCPTransport(
+    		myEndpoint, 
+    		"node.p12", 
+    		"password", 
+    		"truststore.p12", 
+    		"password"
+		);
+        RaftServer raftServer = new RaftServer(
+    		raftPort, 
+    		"node.p12", 
+    		"password", 
+    		"truststore.p12", 
+    		"password"
+		);
 
         RaftNode node = RaftNode.newBuilder()
                 .setGroupId("blackjack")
@@ -283,8 +295,20 @@ public class BlackJackNode {
 
         //initialGroup.add(myEndpoint);
 
-        TCPTransport transport = new TCPTransport(myEndpoint);
-        RaftServer   raftServer = new RaftServer(RAFT_BASE + myNodeId);
+        TCPTransport transport = new TCPTransport(
+    		myEndpoint, 
+    		"node.p12", 
+    		"password", 
+   		 "truststore.p12", 
+  		 "password"
+		);
+        RaftServer raftServer = new RaftServer(
+   		 RAFT_BASE + myNodeId, 
+   		 "node.p12", 
+   		 "password", 
+   		 "truststore.p12", 
+  		 "password"
+		  );
 
         RaftNode node = RaftNode.newBuilder()
                 .setGroupId("blackjack")

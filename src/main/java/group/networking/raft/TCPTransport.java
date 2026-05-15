@@ -89,20 +89,19 @@ public class TCPTransport implements Transport {
 
 
     private void doSend(TCPEndpoint target, RaftMessage message) {
-        try (Socket socket = sslSocketFactory != null ?
-                sslSocketFactory.createSocket(target.getHost(), target.getPort()) :
-                new Socket(target.getHost(), target.getPort());
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
-
-
-            out.writeObject(message);
-            out.flush();
-
-        } catch (Exception e) {
-            System.err.println("[TcpTransport] Failed to send to "
-                    + target + ": " + e.getMessage());
-        }
-    }
+	if (sslSocketFactory == null) {
+        System.err.println("[TcpTransport] SSL not initialized. I will not be sending that.");
+        return;
+    	}
+	
+        try (Socket socket = sslSocketFactory.createSocket(target.getHost(), target.getPort());
+         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+        out.writeObject(message);
+        out.flush();
+    	} catch (Exception e) {
+        System.err.println("[TcpTransport] Secure send failed: " + e.getMessage());
+    	}    
+	}
 
 
     @Override
