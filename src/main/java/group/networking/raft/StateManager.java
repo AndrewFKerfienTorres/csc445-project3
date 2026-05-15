@@ -27,10 +27,13 @@ public class StateManager implements StateMachine {
         switch (action.getType()) {
             case JOIN:
                 if (phase != GameState.Phase.WAITING) {
+                    System.out.println("\n[Game] " + "Game already started. No new players can join.");
                     return "Game already started. No new players can join.";
                 }
                 boolean added = gameState.addPlayer(playerId);
                 if (!added) return playerId + " is already in the lobby.";
+
+                System.out.println("\n[Game] " + playerId + " joined the lobby. Players: " + gameState.getPlayerIds());
                 return playerId + " joined the lobby. Players: " + gameState.getPlayerIds();
 
             case PLACE_BET:
@@ -43,8 +46,11 @@ public class StateManager implements StateMachine {
                 String msg = playerId + " bet $" + action.getAmount();
                 if (gameState.allBetsPlaced()) {
                     gameState.setPhase(GameState.Phase.DEALING);
+
+                    System.out.println("\n[Game] " + msg + ". All bets placed — dealing cards now!");
                     return msg + ". All bets placed — dealing cards now!";
                 }
+                System.out.println("\n[Game] " + msg + ". Waiting for others to bet.");
                 return msg + ". Waiting for others to bet.";
 
             case DEAL_CARDS:
@@ -52,7 +58,7 @@ public class StateManager implements StateMachine {
                     return "Not in dealing phase (current: " + phase + ")";
                 }
                 String initialHands = gameState.dealInitialCards(commitIndex);
-		gameState.startPlayerTurns();
+		        gameState.startPlayerTurns();
                 gameState.setPhase(GameState.Phase.PLAYER_TURNS);
                 StringBuilder sb = new StringBuilder("Cards dealt!\n");
                 sb.append(gameState.getSummary());
@@ -62,6 +68,7 @@ public class StateManager implements StateMachine {
                 
                 String current = gameState.getCurrentPlayerId();
                 if (current != null) sb.append("\n→ ").append(current).append("'s turn. Hit or stand?");
+                System.out.println("\n[Game] " + sb.toString());
                 return sb.toString();
 
             case HIT:
@@ -79,8 +86,10 @@ public class StateManager implements StateMachine {
                     boolean allDone = gameState.bust(playerId);
                     String bustMsg = playerId + " drew → " + handStr + " = " + value + " BUST!";
                     if (allDone) {
+                        System.out.println("\n[Game] " + bustMsg);
                         return bustMsg + "\n" + runDealerAndPayout();
                     }
+                    System.out.println("\n[Game] " + bustMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.");
                     return bustMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.";
                 }
 
@@ -89,8 +98,11 @@ public class StateManager implements StateMachine {
                     boolean allDone = gameState.stand(playerId);
                     hitMsg += " (21 — auto-stand)";
                     if (allDone) return hitMsg + "\n" + runDealerAndPayout();
+                    
+                    System.out.println("\n[Game] " + hitMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.");
                     return hitMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.";
                 }
+                System.out.println("\n[Game] " + hitMsg + ". Hit or stand?");
                 return hitMsg + ". Hit or stand?";
 
             case STAND:
@@ -102,12 +114,13 @@ public class StateManager implements StateMachine {
                 }
 
                 boolean allDone = gameState.stand(playerId);
-                String standMsg = playerId + " stands with " + gameState.getHand(playerId)
-                        + " = " + GameState.getHandValue(gameState.getHand(playerId));
+                String standMsg = playerId + " stands with " + gameState.getHand(playerId) + " = " + GameState.getHandValue(gameState.getHand(playerId));
 
                 if (allDone) {
+                    System.out.println("\n[Game] " + standMsg);
                     return standMsg + "\n" + runDealerAndPayout();
                 }
+                System.out.println("\n[Game] " + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.");
                 return standMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.";
 
             case DOUBLE_DOWN:
@@ -123,13 +136,14 @@ public class StateManager implements StateMachine {
 
                 List<String> hand = gameState.getHand(playerId);
                 int handValue = GameState.getHandValue(hand);
-                String doubleMsg = playerId + " doubles down → " + hand + " = " + handValue
-                        + (handValue > 21 ? " BUST!" : "");
+                String doubleMsg = playerId + " doubles down → " + hand + " = " + handValue + (handValue > 21 ? " BUST!" : "");
 
                 boolean allDoneDouble = gameState.getCurrentPlayerId() == null;
                 if (allDoneDouble) {
+                    System.out.println("\n[Game] " + doubleMsg);
                     return doubleMsg + "\n" + runDealerAndPayout();
                 }
+                System.out.println("\n[Game] " + doubleMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.");
                 return doubleMsg + "\n→ " + gameState.getCurrentPlayerId() + "'s turn.";
 
             case NEXT_PHASE:
@@ -139,11 +153,12 @@ public class StateManager implements StateMachine {
                             return "No players have joined yet.";
                         }
                         gameState.setPhase(GameState.Phase.BETTING);
-                        return "Game started! " + gameState.getPlayerIds().size()
-                                + " players. Place your bets!";
+                        System.out.println("\n[Game] " + "Game started! " + gameState.getPlayerIds().size() + " players. Place your bets!");
+                        return "Game started! " + gameState.getPlayerIds().size() + " players. Place your bets!";
                     case PAYOUT:
                         gameState.resetForNextRound();
                         gameState.setPhase(GameState.Phase.BETTING);
+                        System.out.println("\n[Game] " + "New round! Place your bets.");
                         return "New round! Place your bets.";
                     default:
                         return "NEXT_PHASE not valid in phase: " + phase;
@@ -161,6 +176,11 @@ public class StateManager implements StateMachine {
 
         String result = gameState.calculatePayout();
         gameState.setPhase(GameState.Phase.PAYOUT);
+
+        System.out.println("\n[Game] " +"Dealer plays: " + gameState.getDealerHand()
+                + " = " + GameState.getHandValue(gameState.getDealerHand())
+                + "\n" + result
+                + "\nType 'next' to start a new round.");
 
         return "Dealer plays: " + gameState.getDealerHand()
                 + " = " + GameState.getHandValue(gameState.getDealerHand())

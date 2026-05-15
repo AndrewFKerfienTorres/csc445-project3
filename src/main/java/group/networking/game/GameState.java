@@ -115,7 +115,7 @@ public class GameState implements Serializable {
     public String dealInitialCards(long commitIndex) {
 
 
-        dealer.reset();
+        dealer.reset(commitIndex);
         dealer.dealInitialSelf();
         for (PlayerHand p : players.values()){
             System.out.println(p.getId());

@@ -24,12 +24,12 @@ public class Deck {
      * thereafter shuffle the deck.
      */
 
-    public void shuffle(){
+    public void shuffle(long seed) {
         cards.addAll(dealt);
-        ArrayList<Card> l = new ArrayList<>(cards);
-        Collections.shuffle(l);
-        cards = new ArrayDeque<Card>(l);
         dealt.clear();
+        ArrayList<Card> l = new ArrayList<>(cards);
+        Collections.shuffle(l, new Random(seed));
+        cards = new ArrayDeque<>(l);
     }
 
     /*

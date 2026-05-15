@@ -99,10 +99,17 @@ public class Dealer {
         return handValue;
     }
 
-    public void reset(){
+    public void reset() {
         handState = HandState.BELOW_LIMIT;
         handValue = 0;
-        deck.shuffle();
+        hand = "";
+    }
+
+    public void reset(long seed){
+        handState = HandState.BELOW_LIMIT;
+        handValue = 0;
+        hand = "";
+        deck.shuffle(seed);
     }
 
     private boolean isAce(Card c){
