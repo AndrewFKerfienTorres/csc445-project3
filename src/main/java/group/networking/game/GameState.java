@@ -122,7 +122,7 @@ public class GameState implements Serializable {
 
         String initialHands = "";
 
-        initialHands += "dealer's initial hand:\n%s\n[FACE DOWN]\n".formatted(Arrays.asList(dealer.getHand()));
+        initialHands += "dealer's initial hand:\n%s\n".formatted(Arrays.asList(dealer.getHand()));
 
         for (PlayerHand p : players.values()){
             initialHands += "%s's hand:\n%s\n".formatted(p.getId(), Arrays.asList(p.getHand()));
