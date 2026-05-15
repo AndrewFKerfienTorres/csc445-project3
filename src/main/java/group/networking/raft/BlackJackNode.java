@@ -280,7 +280,7 @@ public class BlackJackNode {
         List<RaftEndpoint> initialGroup = new ArrayList<>(existingMembers);
         TCPEndpoint myEndpoint = new TCPEndpoint(String.valueOf(myNodeId), myIp, RAFT_BASE + myNodeId);
 
-        initialGroup.add(myEndpoint);
+        //initialGroup.add(myEndpoint);
 
         TCPTransport transport = new TCPTransport(myEndpoint);
         RaftServer   raftServer = new RaftServer(RAFT_BASE + myNodeId);
