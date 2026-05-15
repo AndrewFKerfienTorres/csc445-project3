@@ -259,7 +259,8 @@ public class BlackJackNode {
         DataOutputStream out = new DataOutputStream(lobbySocket.getOutputStream());
 
         out.writeUTF(playerName);
-        String myIp = getLocalIp();
+        //String myIp = getLocalIp();
+        String myIp = lobbySocket.getLocalAddress().getHostAddress();
         out.writeUTF(myIp);
         out.flush();
 
