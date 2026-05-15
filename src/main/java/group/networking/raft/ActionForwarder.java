@@ -9,9 +9,9 @@ import java.util.concurrent.*;
 
 public class ActionForwarder {
 
-    // Forward port = 9500 + nodeId  (e.g. node 1 = 9501, node 2 = 9502)
+    // Forward port = 27081 + nodeId  (e.g. node 1 = 27081, node 2 = 27082)
     public static int forwardPortFor(int nodeId) {
-        return 9500 + nodeId;
+        return 27081 + nodeId;
     }
 
     private final int port;

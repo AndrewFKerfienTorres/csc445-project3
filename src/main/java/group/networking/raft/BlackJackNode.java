@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.*;
 
 public class BlackJackNode {
 
-    private static final int LOBBY_PORT   = 7777;
+    private static final int LOBBY_PORT   = 27080;
     private static final int RAFT_BASE    = 9000;
     private static final int MAX_RETRIES  = 15;
     private static final int RETRY_DELAY  = 100;
