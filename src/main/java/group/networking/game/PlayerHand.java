@@ -10,8 +10,8 @@ public class PlayerHand {
 
     private String hand = "";
 
-    public PlayerHand(String d){
-        this.id = d;
+    public PlayerHand(String id){
+        this.id = id;
         status = BELOW_LIMIT;
         currentValue = 0;
     }
