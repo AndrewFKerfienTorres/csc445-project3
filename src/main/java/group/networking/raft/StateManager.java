@@ -12,6 +12,8 @@ public class StateManager implements StateMachine {
 
     private GameState gameState = new GameState();
 
+    //                        TODO: The result currently only shows up for one
+    //                        TODO  of the hosts
     @Override
     public Object runOperation(long commitIndex, Object operation) {
         if (!(operation instanceof GameAction action)) {
@@ -54,7 +56,6 @@ public class StateManager implements StateMachine {
                 gameState.setPhase(GameState.Phase.PLAYER_TURNS);
                 StringBuilder sb = new StringBuilder("Cards dealt!\n");
                 sb.append(gameState.getSummary());
-
 
                 sb.append(initialHands);
 
