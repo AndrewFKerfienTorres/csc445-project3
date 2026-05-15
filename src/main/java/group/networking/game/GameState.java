@@ -83,10 +83,17 @@ public class GameState implements Serializable {
     }
 
     public boolean stand(String playerId) {
+        int currentIndex = playerIds.indexOf(currentPlayerId);
 
+        int nextIndex = currentIndex + 1;
 
-        return true; // TODO Is this for state not related to game objects?
-
+        if (nextIndex < playerIds.size()) {
+            currentPlayerId = playerIds.get(nextIndex);
+            return false;
+        } else {
+            currentPlayerId = null;
+            return true;
+        }
     }
 
     public boolean bust(String playerId) {
@@ -153,10 +160,9 @@ public class GameState implements Serializable {
         if (dealer.getHandValue() > 21) dealerIsWinner = false;
         else dealerIsWinner = true;
 
-        for (PlayerHand p : winners){
-            if (p.getValue() < dealer.getHandValue() && dealer.getHandValue() <= 21){
-                winners.remove(p);
-            }else if (p.getValue() > dealer.getHandValue()){
+        winners.removeIf(p -> p.getValue() < dealer.getHandValue() && dealer.getHandValue() <= 21);
+        for (PlayerHand p : winners) {
+            if (p.getValue() > dealer.getHandValue()) {
                 dealerIsWinner = false;
             }
         }
@@ -205,8 +211,28 @@ public class GameState implements Serializable {
 
     }
 
-    public static int getHandValue(List<String> dealerHand) {
-        return 5;
-    }
+    public static int getHandValue(List<String> hand) {
+        int value = 0;
+        int aceCount = 0;
 
+        for (String card : hand) {
+            if (card.equals("J") || card.equals("Q") || card.equals("K") || card.equals("10")) {
+                value += 10;
+            }
+
+            else if (card.equals("A")) {
+                aceCount++;
+                value += 11;
+            }
+            else
+                value += Integer.parseInt(card);
+        }
+
+        while (value > 21 && aceCount > 0) {
+            value -= 10;
+            aceCount--;
+        }
+
+        return value;
+    }
 }
