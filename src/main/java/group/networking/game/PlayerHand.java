@@ -3,15 +3,15 @@ package group.networking.game;
 import static group.networking.game.HandState.*;
 
 public class PlayerHand {
-
+    
     private String id;
     private HandState status;
     private int currentValue;
 
     private String hand = "";
 
-    public PlayerHand(String id){
-        this.id = id;
+    public PlayerHand(String d){
+        this.id = d;
         status = BELOW_LIMIT;
         currentValue = 0;
     }
@@ -31,7 +31,7 @@ public class PlayerHand {
     public HandState addDrawn(Card c){
         currentValue += c.getValue();
         status = checkState(currentValue);
-        hand +=  c.toString();
+        hand +=  c.toString() + "\n";
         return status;
     }
 
