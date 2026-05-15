@@ -45,6 +45,64 @@ public class GameState implements Serializable {
         return true;
     }
 
+    public boolean removePlayer(String playerId) {
+        if (!playerIds.contains(playerId)) return false;
+ 
+        System.out.println("[Game] " + playerId + " disconnected during " + currentPhase);
+ 
+        switch (currentPhase) {
+            case WAITING, PAYOUT -> {
+                purgePlayer(playerId);
+                return false;
+            }
+            case BETTING -> {
+                purgePlayer(playerId);
+                // If nobody is left, don't auto-advance into an empty deal.
+                if (playerIds.isEmpty()) return false;
+                return allBetsPlaced();
+            }
+            case DEALING -> {
+                purgePlayer(playerId);
+                return false;
+            }
+            case PLAYER_TURNS -> {
+                boolean wasCurrent = playerId.equals(currentPlayerId);
+                purgePlayer(playerId);
+                if (wasCurrent) {
+                    return advanceToNextActivePlayer();
+                }
+                return false;
+            }
+            case DEALER_TURN -> {
+                purgePlayer(playerId);
+                return false;
+            }
+            default -> {
+                purgePlayer(playerId);
+                return false;
+            }
+        }
+    }
+
+    private boolean advanceToNextActivePlayer() {
+        int currentIndex = playerIds.indexOf(currentPlayerId);
+        int nextIndex = currentIndex + 1;
+ 
+        if (nextIndex < playerIds.size()) {
+            currentPlayerId = playerIds.get(nextIndex);
+            return false;
+        } else {
+            currentPlayerId = null;
+            return true; // all players done
+        }
+    }
+ 
+    private void purgePlayer(String playerId) {
+        playerIds.remove(playerId);
+        players.remove(playerId);
+        betByPlayer.remove(playerId);
+    }
+
     public boolean hasPlayer(String playerId) {
         return playerIds.contains(playerId);
     }

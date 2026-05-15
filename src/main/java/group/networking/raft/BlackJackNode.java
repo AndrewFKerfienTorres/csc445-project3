@@ -1,5 +1,28 @@
 package group.networking.raft;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.ObjectOutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import group.networking.game.GameAction;
 import io.microraft.RaftConfig;
 import io.microraft.RaftEndpoint;
@@ -7,12 +30,6 @@ import io.microraft.RaftNode;
 import io.microraft.RaftRole;
 import io.microraft.exception.NotLeaderException;
 import io.microraft.model.impl.DefaultRaftModelFactory;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
 
 
 public class BlackJackNode {
@@ -26,12 +43,14 @@ public class BlackJackNode {
     private String playerName;
     private int nodeId;
     private static TCPEndpoint actionEndpoint;
+    private Socket connectionSocket;
 
-    public BlackJackNode(RaftNode raftNode, String playerName, int nodeId, TCPEndpoint actionEndpoint) {
+    public BlackJackNode(RaftNode raftNode, String playerName, int nodeId, TCPEndpoint actionEndpoint, Socket connectionSocket) {
         this.raftNode = raftNode;
         this.playerName = playerName;
         this.nodeId = nodeId;
         this.actionEndpoint = actionEndpoint;
+        this.connectionSocket = connectionSocket;
     }
 
     public static void main(String[] args) throws Exception {
@@ -124,6 +143,7 @@ public class BlackJackNode {
 
         List<Socket>  joinerSockets = new CopyOnWriteArrayList<>();
         AtomicBoolean lobbyOpen     = new AtomicBoolean(true);
+        Map<Integer, String> joinerNameMap = new ConcurrentHashMap<>();
 
         Thread acceptThread = new Thread(() -> {
             while (lobbyOpen.get()) {
@@ -142,6 +162,10 @@ public class BlackJackNode {
                             String joinerName = in.readUTF();
                             String joinerIp   = in.readUTF();
                             int    joinerRaftPort = RAFT_BASE + assignedId;
+
+
+
+                            joinerNameMap.put(assignedId, joinerName);
 
                             TCPEndpoint joinerEndpoint = new TCPEndpoint(String.valueOf(assignedId), joinerIp, joinerRaftPort);
 
@@ -227,9 +251,36 @@ public class BlackJackNode {
         try { lobbySocket.close(); } catch (Exception ignored) {}
         Thread.sleep(500);
 
-        System.out.println("[Host] Lobby closed. Adding " + joinerEndpointMap.size() 
-                + " joiner(s) to Raft cluster...");
+        System.out.println("[Host] Lobby closed. Adding " + joinerEndpointMap.size() + " joiner(s) to Raft cluster...");
 
+        for (Map.Entry<Integer, Socket> entry : joinerSocketMap.entrySet()) {
+            int joinerId = entry.getKey();
+            Socket joinerSock = entry.getValue();
+            joinerSock.setKeepAlive(true);
+            TCPEndpoint joinerEp = joinerEndpointMap.get(joinerId);
+
+            Thread watchdog = new Thread(() -> {
+                try {
+                    joinerSock.setSoTimeout(0);
+                    int i;
+                    while ((i = joinerSock.getInputStream().read()) != -1) {
+                        Thread.sleep(100);
+                    }
+                } catch (Exception e) {// A SocketException or IOException here usually means the connection dropped
+                    System.out.println("[Host] Connection error for node " + joinerId + ": " + e.getMessage());
+                }
+
+
+                String leavingPlayer = joinerNameMap.get(joinerId);
+                if (leavingPlayer != null) {
+                    System.out.println("[Host] Detected disconnect for node " + joinerId);
+                    System.out.println("-----------------------ACTION-LEAVE------------------------------");
+                    submitAction(node, new GameAction(GameAction.Type.LEAVE, leavingPlayer));
+                }
+            }, "watchdog-" + joinerId);
+            watchdog.setDaemon(true);
+            watchdog.start();
+        }
 
         Thread.sleep(2000);
         
@@ -256,7 +307,7 @@ public class BlackJackNode {
         submitAction(node, new GameAction(GameAction.Type.JOIN, playerName));
         submitAction(node, new GameAction(GameAction.Type.NEXT_PHASE, playerName));
 
-        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint);
+        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint, null);
     }
 
 
@@ -267,12 +318,13 @@ public class BlackJackNode {
         System.out.println("[Joining] Connecting to " + hostIp + ":" + LOBBY_PORT + " ...");
 
         Socket lobbySocket = new Socket(hostIp, LOBBY_PORT);
+        lobbySocket.setKeepAlive(true);
         DataInputStream  in  = new DataInputStream(lobbySocket.getInputStream());
         DataOutputStream out = new DataOutputStream(lobbySocket.getOutputStream());
 
         out.writeUTF(playerName);
         //String myIp = getLocalIp();
-	String myIp = lobbySocket.getLocalAddress().getHostAddress();
+	    String myIp = lobbySocket.getLocalAddress().getHostAddress();
         out.writeUTF(myIp);
         out.flush();
 
@@ -338,11 +390,33 @@ public class BlackJackNode {
         }
 
         System.out.println("[Joining] Confirmed by host. Waiting for game start...");
-
+        String playerID = "Xan";
         in.readBoolean();
 
         System.out.println("[Lobby] Game starting!");
+        
         waitForLeader(node);
+        Thread hostWatchdog = new Thread(() -> {
+            try {
+                // Blocks until the host closes the socket (crash or quit)
+                int i;
+                while ((i = lobbySocket.getInputStream().read()) != -1) { 
+                    Thread.sleep(100);
+                }
+            } catch (Exception e) { }
+
+            System.out.println("[Warning] Host connection lost.");
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            submitAction(node, new GameAction(GameAction.Type.LEAVE, playerID)); 
+        }, "host-watchdog");
+        hostWatchdog.setDaemon(true);
+        System.out.println("watchdog_start");
+        hostWatchdog.start();
+        
 
         while (!node.getReport().join().getResult().getStatus().toString().equals("ACTIVE")) {
             System.out.println("[Joining] Syncing cluster state...");
@@ -351,7 +425,7 @@ public class BlackJackNode {
 
         submitAction(node, new GameAction(GameAction.Type.JOIN, playerName));
 
-        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint);
+        return new BlackJackNode(node, playerName, myNodeId, actionEndpoint, lobbySocket);
     }
 
     // Main game loop
@@ -373,6 +447,7 @@ public class BlackJackNode {
                 case "double"       -> submitAction(new GameAction(GameAction.Type.DOUBLE_DOWN, playerName));
                 case "deal"         -> submitAction(new GameAction(GameAction.Type.DEAL_CARDS, playerName));
                 case "next"         -> submitAction(new GameAction(GameAction.Type.NEXT_PHASE, playerName));
+                case "list"         -> submitAction(new GameAction(GameAction.Type.LIST, playerName));
                 default -> {
                     if (line.startsWith("bet ")) {
                         try {
@@ -522,4 +597,7 @@ public class BlackJackNode {
         System.out.println(" ───────────────────────────────── ");
         System.out.println();
     }
+
+
+
 }

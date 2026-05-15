@@ -1,11 +1,11 @@
 package group.networking.raft;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import group.networking.game.GameAction;
 import group.networking.game.GameState;
 import io.microraft.statemachine.StateMachine;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 
 public class StateManager implements StateMachine {
@@ -163,10 +163,41 @@ public class StateManager implements StateMachine {
                     default:
                         return "NEXT_PHASE not valid in phase: " + phase;
                 }
+            case LEAVE:
+                boolean shouldAdvance = gameState.removePlayer(playerId);
+                String leaveResult;
+
+                if (gameState.getPlayerIds().isEmpty()) {
+                    gameState.setPhase(GameState.Phase.WAITING);
+                    leaveResult = playerId + " left. No players remaining.";
+                } else if (shouldAdvance) {
+                    GameState.Phase currentPhase2 = gameState.getCurrentPhase();
+                    if (currentPhase2 == GameState.Phase.BETTING) {
+                        gameState.setPhase(GameState.Phase.DEALING);
+                        leaveResult = playerId + " left. All remaining players have bet — dealing!";
+                    } else if (currentPhase2 == GameState.Phase.PLAYER_TURNS) {
+                        String next = gameState.getCurrentPlayerId();
+                        if (next == null) {
+                            leaveResult = playerId + " left.\n" + runDealerAndPayout();
+                        } else {
+                            leaveResult = playerId + " left. -> " + next + "'s turn.";
+                        }
+                    } else {
+                        leaveResult = playerId + " left. Players: " + gameState.getPlayerIds();
+                    }
+                } else {
+                    leaveResult = playerId + " left. Players: " + gameState.getPlayerIds();
+                }
+
+                System.out.println("\n[Game] " + leaveResult);
+                return leaveResult;
+            case LIST:
+                return gameState.getPlayerIds();
 
         default:
             return "Unknown action type: " + action.getType();
         }
+        
     }
 
 

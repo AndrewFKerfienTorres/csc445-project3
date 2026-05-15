@@ -1,16 +1,21 @@
 package group.networking.raft;
 
-import io.microraft.RaftEndpoint;
-import io.microraft.model.message.RaftMessage;
-import io.microraft.transport.Transport;
-
-import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+
+import io.microraft.RaftEndpoint;
+import io.microraft.model.message.RaftMessage;
+import io.microraft.transport.Transport;
 
 
 public class TCPTransport implements Transport {
@@ -99,7 +104,7 @@ public class TCPTransport implements Transport {
         out.writeObject(message);
         out.flush();
     	} catch (Exception e) {
-        System.err.println("[TcpTransport] Secure send failed: " + e.getMessage());
+        // System.err.println("[TcpTransport] Secure send failed: " + e.getMessage());
     	}    
 	}
 

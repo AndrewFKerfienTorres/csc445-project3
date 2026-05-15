@@ -14,7 +14,9 @@ public class GameAction implements Serializable {
         HIT,
         STAND,
         DOUBLE_DOWN,
-        NEXT_PHASE
+        NEXT_PHASE,
+        LEAVE,
+        LIST
     }
 
     private final Type type;
