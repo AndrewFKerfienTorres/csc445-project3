@@ -112,14 +112,22 @@ public class GameState implements Serializable {
         return p.getValue();
     }
 
-    public void dealInitialCards(long commitIndex) {
+    public String dealInitialCards(long commitIndex) {
 
         dealer.dealInitialSelf();
         for (PlayerHand p : players.values()){
             dealer.dealInitialTo(p);
         }
 
+        String initialHands = "";
 
+        initialHands += "dealer's initial hand:\n%s\n[FACE DOWN]\n".formatted(dealer.getHand()[0]);
+
+        for (PlayerHand p : players.values()){
+            initialHands += "%s's hand:\n%s\n".formatted(p.getId(), p.getHand());
+        }
+
+        return initialHands;
     }
 
     public boolean allBetsPlaced() {
