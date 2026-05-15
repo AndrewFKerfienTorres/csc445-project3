@@ -7,7 +7,7 @@ public class Dealer {
 
     private int handValue;
     private HandState handState;
-    private String hand;
+    private String hand = "";
 
 
     private Dealer(){
@@ -24,7 +24,8 @@ public class Dealer {
     }
 
     public String[] getHand(){
-        return hand.split("\n");
+        String[] strings = hand.split("\n");
+        return strings;
     }
 
     public HandState dealInitialSelf(){
